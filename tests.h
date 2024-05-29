@@ -4,7 +4,64 @@
 
 using namespace std;
 
-void testInsertAndTraversal() {
+void testTraversal();
+void testFindElement();
+void testGetNodeByValue();
+void testGetSubTree();
+void testSaveToString();
+void testBuildKLP();
+void testSaveKLP();
+void testLoadKLP();
+
+void menu() {
+    cout << "Select a test to run:" << endl;
+    cout << "1. Test Traversal" << endl;
+    cout << "2. Test Find Element" << endl;
+    cout << "3. Test Get Node By Value" << endl;
+    cout << "4. Test Get SubTree" << endl;
+    cout << "5. Test Save To String" << endl;
+    cout << "6. Test Build KLP" << endl;
+    cout << "7. Test Save KLP" << endl;
+    cout << "8. Test Load KLP" << endl;
+    cout << "0. Exit" << endl;
+}
+
+// Функция для выполнения выбранного теста
+void runTest(int choice) {
+    switch (choice) {
+    case 1:
+        testTraversal();
+        break;
+    case 2:
+        testFindElement();
+        break;
+    case 3:
+        testGetNodeByValue();
+        break;
+    case 4:
+        testGetSubTree();
+        break;
+    case 5:
+        testSaveToString();
+        break;
+    case 6:
+        testBuildKLP();
+        break;
+    case 7:
+        testSaveKLP();
+        break;
+    case 8:
+        testLoadKLP();
+        break;
+    case 0:
+        cout << "Exiting..." << endl;
+        break;
+    default:
+        cout << "Invalid choice. Please try again." << endl;
+    }
+}
+
+void testTraversal() {
     BinaryTree<int> tree;
     tree.insert(5);
     tree.insert(3);
@@ -146,11 +203,12 @@ void testFindElement() {
     }
 
     if (passed) {
-        cout << "All tests passed\n\n";
+        cout << "All ok\n\n";
     }
     else {
-        cout << "Some tests faile\n\n";
+        cout << "Some tests failed\n\n";
     }
+    cout << endl;
 }
 
 void testGetNodeByValue() {
@@ -170,20 +228,21 @@ void testGetNodeByValue() {
     TreeNode<int>* node = tree.GetNodeByValue(tree.getRoot(), 6);
 
     if (node) {
-        cout << "Node with value 6 found.\n";
+        cout << "node 6 found.\n";
     }
     else {
-        cout << "Node with value 6 not found.\n";
+        cout << "node 6 not found.\n";
     }
 
     node = tree.GetNodeByValue(tree.getRoot(), 10);
 
     if (node) {
-        cout << "Node with value 10 found.\n";
+        cout << "node 10 found.\n";
     }
     else {
-        cout << "Node with value 10 not found.\n";
+        cout << "node 10 not found.\n";
     }
+    cout << endl;
 }
 
 void testGetSubTree() {
@@ -195,22 +254,162 @@ void testGetSubTree() {
     tree.insert(4);
     tree.insert(6);
     tree.insert(8);
+    cout << "Testing GetSubTree\n";
 
     cout << "tree:" << endl;
     tree.klpTraversal([](const int& data) { cout << data << " "; });
-    cout << endl;
+    
 
     BinaryTree<int>* subtree = tree.GetSubTree(3);
 
     if (subtree) {
-        cout << "\nSubtree rooted at node with value 3:" << endl;
+        cout << "\nsubtree rooted at node 3:" << endl;
         cout << "KLP traversal: ";
         subtree->klpTraversal([](const int& data) { cout << data << " "; });
         cout << endl;
     }
     else {
-        cout << "\nSubtree with root value 3 not found." << endl;
+        cout << "\nsubtree root at node 3 not found." << endl;
     }
 
     delete subtree;
+    cout << endl;
+}
+
+
+void testSaveToString() {
+    BinaryTree<int> tree;
+    tree.insert(5);
+    tree.insert(3);
+    tree.insert(7);
+    tree.insert(2);
+    tree.insert(4);
+    tree.insert(6);
+    tree.insert(8);
+
+    string klpResult = tree.saveToString([&tree](TreeNode<int>* node, ostringstream& out) {
+        tree.klpToString(node, out);
+        });
+
+    string expectedKLP = "5 3 2 4 7 6 8 ";
+
+    cout << "Testing SaveToString:\n";
+    cout << "result: " << klpResult << endl;
+    cout << "epected: " << expectedKLP << endl;
+
+    if (klpResult == expectedKLP) {
+        cout << "ok\n";
+    }
+    else {
+        cout << "failed\n";
+    }
+    cout << endl;
+}
+
+void testLoadFromString() {
+    BinaryTree<int> tree;
+    tree.insert(5);
+    tree.insert(3);
+    tree.insert(7);
+    tree.insert(2);
+    tree.insert(4);
+    tree.insert(6);
+    tree.insert(8);
+    cout << "Testing LoadFromString\n";
+
+    string klpString = tree.saveKLP();
+    BinaryTree<int> newTree;
+    newTree.loadFromString(klpString, [&](istringstream& in) { return newTree.buildKLP(in); });
+
+    stringstream resultStream;
+    newTree.klpTraversal([&](const int& data) {
+        resultStream << data << " ";
+        });
+
+    string result = resultStream.str();
+    cout << "expected KLP: " << klpString << endl;
+    cout << "result KLP: " << result << endl;
+
+    if (klpString == result) {
+        cout << "ok" << endl;
+    }
+    else {
+        cout << "failed" << endl;
+    }
+    cout << endl;
+}
+
+
+void testBuildKLP() {
+    cout << "Testing BuildKLP\n";
+
+    string klpString = "5 3 2 4 7 6 8";
+
+    istringstream in(klpString);
+
+    BinaryTree<int> tree;
+
+    tree.loadFromString(klpString, [&](istringstream& in) { return tree.buildKLP(in); });
+
+    stringstream resultStream;
+    tree.klpTraversal([&](const int& data) {
+        resultStream << data << " ";
+        });
+
+    string result = resultStream.str();
+    cout << "expected KLP: " << klpString << endl;
+    cout << "result KLP: " << result << endl;
+
+    if (klpString + " " == result) {
+        cout << "ok" << endl;
+    }
+    else {
+        cout << "failed" << endl;
+    }
+}
+
+void testSaveKLP() {
+    BinaryTree<int> tree;
+    tree.insert(5);
+    tree.insert(3);
+    tree.insert(7);
+    tree.insert(2);
+    tree.insert(4);
+    tree.insert(6);
+    tree.insert(8);
+    cout << "Testing SaveKLP\n";
+
+    string resultKLP = tree.saveKLP();
+    string expectedKLP = "5 3 2 4 7 6 8 ";
+
+    cout << "expected: " << expectedKLP << endl;
+    cout << "result: " << resultKLP << endl;
+
+    if (resultKLP == expectedKLP) {
+        cout << "ok" << endl; }
+    else {
+        cout << "failed" << endl; }
+    cout << "\n";
+}
+
+void testLoadKLP() {
+    string klpData = "5 3 2 4 7 6 8 ";
+
+    cout << "Testing LoadKLP\n";
+
+    BinaryTree<int> tree;
+    tree.loadKLP(klpData);
+
+    string resultKLP = tree.saveKLP();
+    string expectedKLP = "5 3 2 4 7 6 8 ";
+
+    cout << "expected: " << expectedKLP << endl;
+    cout << "result: " << resultKLP << endl;
+
+    if (resultKLP == expectedKLP) {
+        cout << "ok" << endl;
+    }
+    else {
+        cout << "failed" << endl;
+    }
 }
